@@ -1,3 +1,74 @@
+<a name="19.2.0-rc.0"></a>
+# 19.2.0-rc.0 (2025-02-19)
+### common
+| Commit | Type | Description |
+| -- | -- | -- |
+| [3e39da593a](https://github.com/angular/angular/commit/3e39da593a0a0c047a2a03b8d5fcabf9dbace40f) | feat | introduce experimental `httpResource` ([#59876](https://github.com/angular/angular/pull/59876)) |
+| [7bd4be0fa5](https://github.com/angular/angular/commit/7bd4be0fa585fda8a09d27683ade77b383500768) | fix | clean up `urlChanges` subscribers when root scope is destroyed ([#59703](https://github.com/angular/angular/pull/59703)) |
+### compiler
+| Commit | Type | Description |
+| -- | -- | -- |
+| [5b20bab96d](https://github.com/angular/angular/commit/5b20bab96d20fe89b5cc4b4af28edbaae2604da1) | feat | Add Skip Hydration diagnostic. ([#59576](https://github.com/angular/angular/pull/59576)) |
+### compiler-cli
+| Commit | Type | Description |
+| -- | -- | -- |
+| [973033abd2](https://github.com/angular/angular/commit/973033abd2d9580cec79948c9c38f977fef2de87) | fix | avoid crash in isolated transform operations ([#59869](https://github.com/angular/angular/pull/59869)) |
+### core
+| Commit | Type | Description |
+| -- | -- | -- |
+| [2588985f43](https://github.com/angular/angular/commit/2588985f433b20a6a5a8d239347291f5d6fb2451) | feat | pass signal node to throwInvalidWriteToSignalErrorFn ([#59600](https://github.com/angular/angular/pull/59600)) |
+### forms
+| Commit | Type | Description |
+| -- | -- | -- |
+| [cf36951f83](https://github.com/angular/angular/commit/cf36951f8327d461a3ad4bf65d12bb16cf9a9e4b) | fix | Fix typing on `FormRecord`. ([#59993](https://github.com/angular/angular/pull/59993)) |
+### migrations
+| Commit | Type | Description |
+| -- | -- | -- |
+| [1cd3a7db83](https://github.com/angular/angular/commit/1cd3a7db83e1d05a31d23324676420b614cdabe2) | feat | add migration to convert templates to use self-closing tags ([#57342](https://github.com/angular/angular/pull/57342)) |
+
+<!-- CHANGELOG SPLIT MARKER -->
+
+<a name="19.1.7"></a>
+# 19.1.7 (2025-02-19)
+### common
+| Commit | Type | Description |
+| -- | -- | -- |
+| [e9f10eb4c9](https://github.com/angular/angular/commit/e9f10eb4c950692992098619b9628ecefd1b36ce) | fix | clean up `urlChanges` subscribers when root scope is destroyed ([#59703](https://github.com/angular/angular/pull/59703)) |
+### compiler-cli
+| Commit | Type | Description |
+| -- | -- | -- |
+| [16fc074689](https://github.com/angular/angular/commit/16fc074689d31ef6886c49525b020bc6c1529d0e) | fix | avoid crash in isolated transform operations ([#59869](https://github.com/angular/angular/pull/59869)) |
+### forms
+| Commit | Type | Description |
+| -- | -- | -- |
+| [ec1e4c3d94](https://github.com/angular/angular/commit/ec1e4c3d9430f5ea4380252098d2b4b71d8a950f) | fix | Fix typing on `FormRecord`. ([#59993](https://github.com/angular/angular/pull/59993)) |
+
+<!-- CHANGELOG SPLIT MARKER -->
+
+<a name="19.2.0-next.3"></a>
+# 19.2.0-next.3 (2025-02-13)
+### compiler
+| Commit | Type | Description |
+| -- | -- | -- |
+| [9e847fc60d](https://github.com/angular/angular/commit/9e847fc60d4eef47e665e789ccd2d4f0b4bb94ea) | fix | handle tracking expressions requiring temporary variables ([#58520](https://github.com/angular/angular/pull/58520)) |
+### compiler-cli
+| Commit | Type | Description |
+| -- | -- | -- |
+| [5cd26a9420](https://github.com/angular/angular/commit/5cd26a94206dfe8aabdf0dd15bfc09e7a8c606da) | fix | handle deferred blocks with shared dependencies correctly ([#59926](https://github.com/angular/angular/pull/59926)) |
+### core
+| Commit | Type | Description |
+| -- | -- | -- |
+| [6789c7ef94](https://github.com/angular/angular/commit/6789c7ef947952551d7598fe37a3d86093b75720) | fix | Defer afterRender until after first CD ([#59455](https://github.com/angular/angular/pull/59455)) ([#59551](https://github.com/angular/angular/pull/59551)) |
+| [c87e581dd9](https://github.com/angular/angular/commit/c87e581dd9e240c88cea50f222942873bdccd01d) | fix | Don't run effects in check no changes pass ([#59455](https://github.com/angular/angular/pull/59455)) ([#59551](https://github.com/angular/angular/pull/59551)) |
+| [b0266bda4a](https://github.com/angular/angular/commit/b0266bda4ad4efd19710fd0363a50984f48269dc) | fix | invalidate HMR component if replacement throws an error ([#59854](https://github.com/angular/angular/pull/59854)) |
+### migrations
+| Commit | Type | Description |
+| -- | -- | -- |
+| [aa285c548c](https://github.com/angular/angular/commit/aa285c548c164917ebb5760802484843c6830daf) | fix | account for let declarations in control flow migration ([#59861](https://github.com/angular/angular/pull/59861)) |
+| [1119f85ca9](https://github.com/angular/angular/commit/1119f85ca935f43641f53ee8bc50efa47ad09717) | fix | count used dependencies inside existing control flow ([#59861](https://github.com/angular/angular/pull/59861)) |
+
+<!-- CHANGELOG SPLIT MARKER -->
+
 <a name="19.1.6"></a>
 # 19.1.6 (2025-02-12)
 ### compiler

@@ -32,27 +32,17 @@ import {attachPatchData} from './context_discovery';
 import {getComponentDef} from './def_getters';
 import {depsTracker} from './deps_tracker/deps_tracker';
 import {NodeInjector} from './di';
-import {registerPostOrderHooks} from './hooks';
 import {reportUnknownPropertyError} from './instructions/element_validation';
 import {markViewDirty} from './instructions/mark_view_dirty';
 import {renderView} from './instructions/render';
 import {
   createDirectivesInstances,
-  createLView,
-  createTView,
-  getInitialLViewFlagsFromDef,
   locateHostElement,
-  setInputsForProperty,
+  setAllInputsForProperty,
 } from './instructions/shared';
 import {ComponentDef, DirectiveDef} from './interfaces/definition';
 import {InputFlags} from './interfaces/input_flags';
-import {
-  NodeInputBindings,
-  TContainerNode,
-  TElementContainerNode,
-  TElementNode,
-  TNode,
-} from './interfaces/node';
+import {TContainerNode, TElementContainerNode, TElementNode, TNode} from './interfaces/node';
 import {RElement, RNode} from './interfaces/renderer_dom';
 import {
   CONTEXT,
@@ -82,6 +72,7 @@ import {debugStringifyTypeForError, stringifyForError} from './util/stringify_ut
 import {getComponentLViewByIndex, getTNode} from './util/view_utils';
 import {elementEndFirstCreatePass, elementStartFirstCreatePass} from './view/elements';
 import {ViewRef} from './view_ref';
+import {createLView, createTView, getInitialLViewFlagsFromDef} from './view/construction';
 
 export class ComponentFactoryResolver extends AbstractComponentFactoryResolver {
   /**
@@ -98,51 +89,23 @@ export class ComponentFactoryResolver extends AbstractComponentFactoryResolver {
   }
 }
 
-function toRefArray<T>(
-  map: DirectiveDef<T>['inputs'],
-  isInputMap: true,
-): ComponentFactory<T>['inputs'];
-function toRefArray<T>(
-  map: DirectiveDef<T>['outputs'],
-  isInput: false,
-): ComponentFactory<T>['outputs'];
-
-function toRefArray<
-  T,
-  IsInputMap extends boolean,
-  Return extends IsInputMap extends true
-    ? ComponentFactory<T>['inputs']
-    : ComponentFactory<T>['outputs'],
->(map: DirectiveDef<T>['inputs'] | DirectiveDef<T>['outputs'], isInputMap: IsInputMap): Return {
-  const array: Return = [] as unknown as Return;
-  for (const publicName in map) {
-    if (!map.hasOwnProperty(publicName)) {
-      continue;
+function toInputRefArray<T>(map: DirectiveDef<T>['inputs']): ComponentFactory<T>['inputs'] {
+  return Object.keys(map).map((name) => {
+    const [propName, flags, transform] = map[name];
+    const inputData: ComponentFactory<T>['inputs'][0] = {
+      propName: propName,
+      templateName: name,
+      isSignal: (flags & InputFlags.SignalBased) !== 0,
+    };
+    if (transform) {
+      inputData.transform = transform;
     }
+    return inputData;
+  });
+}
 
-    const value = map[publicName];
-    if (value === undefined) {
-      continue;
-    }
-
-    const isArray = Array.isArray(value);
-    const propName: string = isArray ? value[0] : value;
-    const flags: InputFlags = isArray ? value[1] : InputFlags.None;
-
-    if (isInputMap) {
-      (array as ComponentFactory<T>['inputs']).push({
-        propName: propName,
-        templateName: publicName,
-        isSignal: (flags & InputFlags.SignalBased) !== 0,
-      });
-    } else {
-      (array as ComponentFactory<T>['outputs']).push({
-        propName: propName,
-        templateName: publicName,
-      });
-    }
-  }
-  return array;
+function toOutputRefArray<T>(map: DirectiveDef<T>['outputs']): ComponentFactory<T>['outputs'] {
+  return Object.keys(map).map((name) => ({propName: map[name], templateName: name}));
 }
 
 function verifyNotAnOrphanComponent(componentDef: ComponentDef<unknown>) {
@@ -230,23 +193,11 @@ export class ComponentFactory<T> extends AbstractComponentFactory<T> {
     isSignal: boolean;
     transform?: (value: any) => any;
   }[] {
-    const componentDef = this.componentDef;
-    const inputTransforms = componentDef.inputTransforms;
-    const refArray = toRefArray(componentDef.inputs, true);
-
-    if (inputTransforms !== null) {
-      for (const input of refArray) {
-        if (inputTransforms.hasOwnProperty(input.propName)) {
-          input.transform = inputTransforms[input.propName];
-        }
-      }
-    }
-
-    return refArray;
+    return toInputRefArray(this.componentDef.inputs);
   }
 
   override get outputs(): {propName: string; templateName: string}[] {
-    return toRefArray(this.componentDef.outputs, false);
+    return toOutputRefArray(this.componentDef.outputs);
   }
 
   /**
@@ -423,37 +374,33 @@ export class ComponentRef<T> extends AbstractComponentRef<T> {
     this.hostView = this.changeDetectorRef = new ViewRef<T>(
       _rootLView,
       undefined /* _cdRefInjectingView */,
-      false /* notifyErrorHandler */,
     );
     this.componentType = componentType;
   }
 
   override setInput(name: string, value: unknown): void {
-    const inputData = this._tNode.inputs;
-    let dataValue: NodeInputBindings[typeof name] | undefined;
-    if (inputData !== null && (dataValue = inputData[name])) {
-      this.previousInputValues ??= new Map();
-      // Do not set the input if it is the same as the last value
-      // This behavior matches `bindingUpdated` when binding inputs in templates.
-      if (
-        this.previousInputValues.has(name) &&
-        Object.is(this.previousInputValues.get(name), value)
-      ) {
-        return;
-      }
+    const tNode = this._tNode;
+    this.previousInputValues ??= new Map();
+    // Do not set the input if it is the same as the last value
+    // This behavior matches `bindingUpdated` when binding inputs in templates.
+    if (
+      this.previousInputValues.has(name) &&
+      Object.is(this.previousInputValues.get(name), value)
+    ) {
+      return;
+    }
 
-      const lView = this._rootLView;
-      setInputsForProperty(lView[TVIEW], lView, dataValue, name, value);
-      this.previousInputValues.set(name, value);
-      const childComponentLView = getComponentLViewByIndex(this._tNode.index, lView);
-      markViewDirty(childComponentLView, NotificationSource.SetInput);
-    } else {
-      if (ngDevMode) {
-        const cmpNameForError = stringifyForError(this.componentType);
-        let message = `Can't set value of the '${name}' input on the '${cmpNameForError}' component. `;
-        message += `Make sure that the '${name}' property is annotated with @Input() or a mapped @Input('${name}') exists.`;
-        reportUnknownPropertyError(message);
-      }
+    const lView = this._rootLView;
+    const hasSetInput = setAllInputsForProperty(tNode, lView[TVIEW], lView, name, value);
+    this.previousInputValues.set(name, value);
+    const childComponentLView = getComponentLViewByIndex(tNode.index, lView);
+    markViewDirty(childComponentLView, NotificationSource.SetInput);
+
+    if (ngDevMode && !hasSetInput) {
+      const cmpNameForError = stringifyForError(this.componentType);
+      let message = `Can't set value of the '${name}' input on the '${cmpNameForError}' component. `;
+      message += `Make sure that the '${name}' property is annotated with @Input() or a mapped @Input('${name}') exists.`;
+      reportUnknownPropertyError(message);
     }
   }
 

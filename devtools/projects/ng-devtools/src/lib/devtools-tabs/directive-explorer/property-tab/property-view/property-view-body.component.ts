@@ -15,7 +15,7 @@ import {
   DirectiveTreeData,
 } from '../../property-resolver/directive-property-resolver';
 import {FlatNode} from '../../property-resolver/element-property-resolver';
-import {ResolutionPathComponent} from '../../../dependency-injection/resolution-path.component';
+import {ResolutionPathComponent} from '../../../dependency-injection/resolution-path/resolution-path.component';
 import {MatChipsModule} from '@angular/material/chips';
 import {PropertyViewTreeComponent} from './property-view-tree.component';
 import {MatIcon} from '@angular/material/icon';
@@ -57,14 +57,14 @@ export class PropertyViewBodyComponent {
   >(() => {
     return [
       {
-        title: '@Inputs',
+        title: 'Inputs',
         hidden: this.directiveInputControls().dataSource.data.length === 0,
         controls: this.directiveInputControls(),
         documentation: 'https://angular.dev/api/core/input',
         class: 'cy-inputs',
       },
       {
-        title: '@Outputs',
+        title: 'Outputs',
         hidden: this.directiveOutputControls().dataSource.data.length === 0,
         controls: this.directiveOutputControls(),
         documentation: 'https://angular.dev/api/core/output',
@@ -145,17 +145,6 @@ export class PropertyViewBodyComponent {
       .di-flags {
         display: flex;
         flex-wrap: nowrap;
-      }
-
-      :host-context(.dark-theme) ng-resolution-path {
-        background: #1a1a1a;
-      }
-
-      ng-resolution-path {
-        border-top: 1px solid black;
-        display: block;
-        overflow-x: scroll;
-        background: #f3f3f3;
       }
 
       :host {

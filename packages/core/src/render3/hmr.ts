@@ -13,11 +13,6 @@ import {getComponentDef} from './def_getters';
 import {assertComponentDef} from './errors';
 import {refreshView} from './instructions/change_detection';
 import {renderView} from './instructions/render';
-import {
-  createLView,
-  getInitialLViewFlagsFromDef,
-  getOrCreateComponentTView,
-} from './instructions/shared';
 import {CONTAINER_HEADER_OFFSET} from './interfaces/container';
 import {ComponentDef} from './interfaces/definition';
 import {getTrackedLViews} from './interfaces/lview_tracking';
@@ -44,6 +39,11 @@ import {RendererFactory} from './interfaces/renderer';
 import {NgZone} from '../zone';
 import {ViewEncapsulation} from '../metadata/view';
 import {NG_COMP_DEF} from './fields';
+import {
+  createLView,
+  getInitialLViewFlagsFromDef,
+  getOrCreateComponentTView,
+} from './view/construction';
 
 /** Represents `import.meta` plus some information that's not in the built-in types. */
 type ImportMetaExtended = ImportMeta & {
@@ -308,12 +308,13 @@ function executeWithInvalidateFallback(
   try {
     callback();
   } catch (e) {
-    const errorMessage = (e as {message?: string}).message;
+    const error = e as {message?: string; stack?: string};
 
     // If we have all the necessary information and APIs to send off the invalidation
     // request, send it before rethrowing so the dev server can decide what to do.
-    if (id !== null && errorMessage) {
-      importMeta?.hot?.send?.('angular:invalidate', {id, message: errorMessage, error: true});
+    if (id !== null && error.message) {
+      const toLog = error.message + (error.stack ? '\n' + error.stack : '');
+      importMeta?.hot?.send?.('angular:invalidate', {id, message: toLog, error: true});
     }
 
     // Throw the error in case the page doesn't get refreshed.

@@ -38,13 +38,12 @@ import {
 import {getOrCreateTNode} from '../tnode_manipulation';
 import {mergeHostAttrs} from '../util/attrs_utils';
 import {getConstant} from '../util/view_utils';
+import {addToEndOfViewTree, createTView} from '../view/construction';
+import {createLContainer} from '../view/container';
 import {resolveDirectives} from '../view/directives';
 
 import {
-  addToEndOfViewTree,
-  createDirectivesInstancesInInstruction,
-  createLContainer,
-  createTView,
+  createDirectivesInstances,
   findDirectiveDefMatches,
   saveResolvedLocalsInData,
 } from './shared';
@@ -169,7 +168,7 @@ export function declareTemplate(
   populateDehydratedViewsInLContainer(lContainer, tNode, declarationLView);
 
   if (isDirectiveHost(tNode)) {
-    createDirectivesInstancesInInstruction(declarationTView, declarationLView, tNode);
+    createDirectivesInstances(declarationTView, declarationLView, tNode);
   }
 
   if (localRefsIndex != null) {
